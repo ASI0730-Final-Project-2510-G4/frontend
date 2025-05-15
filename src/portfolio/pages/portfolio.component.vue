@@ -241,6 +241,7 @@ const saveNewProject = async () => {
 
 
 .portfolio-wrapper {
+
   padding: 40px 20px;
   display: flex;
   flex-direction: column;

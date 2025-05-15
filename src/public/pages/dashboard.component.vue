@@ -1,20 +1,19 @@
 <template>
   <div class="dashboard">
-    <h1 class="title">What do we do today?</h1>
-
+    <h1 class="title">{{ $t('dashboard.title') }}</h1>
 
     <!-- Top row (3 options) -->
     <div class="options-row">
       <div
           v-for="option in topOptions"
-          :key="option.title"
+          :key="option.titleKey"
           class="option"
           @click="goTo(option.path)"
       >
         <div class="icon-circle">
-          <img :src="option.icon" :alt="option.title" class="icon" />
+          <img :src="option.icon" :alt="$t(option.titleKey)" class="icon" />
         </div>
-        <p class="option-title">{{ option.title }}</p>
+        <p class="option-title">{{ $t(option.titleKey) }}</p>
       </div>
     </div>
 
@@ -22,14 +21,14 @@
     <div class="options-row bottom-row">
       <div
           v-for="option in bottomOptions"
-          :key="option.title"
+          :key="option.titleKey"
           class="option"
           @click="goTo(option.path)"
       >
         <div class="icon-circle">
-          <img :src="option.icon" :alt="option.title" class="icon" />
+          <img :src="option.icon" :alt="$t(option.titleKey)" class="icon" />
         </div>
-        <p class="option-title">{{ option.title }}</p>
+        <p class="option-title">{{ $t(option.titleKey) }}</p>
       </div>
     </div>
   </div>
@@ -41,14 +40,14 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const topOptions = [
-  { title: 'Search Designers', icon: '/designer.png', path: '/designers' },
-  { title: 'View Portfolio', icon: '/jobs.png', path: '/portfolio' },
-  { title: 'View my payments', icon: '/payments.png', path: '/payments' },
+  { titleKey: 'dashboard.searchDesigners', icon: '/designer.png', path: '/designers' },
+  { titleKey: 'dashboard.viewPortfolio', icon: '/jobs.png', path: '/portfolio' },
+  { titleKey: 'dashboard.viewPayments', icon: '/payments.png', path: '/payments' },
 ];
 
 const bottomOptions = [
-  { title: 'View my reviews', icon: '/reviews.png', path: '/reviews' },
-  { title: 'View my chats', icon: '/chats.png', path: '/chats' },
+  { titleKey: 'dashboard.viewReviews', icon: '/reviews.png', path: '/reviews' },
+  { titleKey: 'dashboard.viewChats', icon: '/chats.png', path: '/chats' },
 ];
 
 const goTo = (path) => {
@@ -58,6 +57,7 @@ const goTo = (path) => {
 <style scoped>
 .dashboard {
   min-height: 100vh;
+
 
   color: white;
   display: flex;
@@ -72,20 +72,7 @@ const goTo = (path) => {
   margin-bottom: 2rem;
 }
 
-.search-container {
-  margin-bottom: 3rem;
-  width: 100%;
-  max-width: 400px;
-}
 
-.search-input {
-  width: 100%;
-  padding: 0.75rem 1.5rem;
-  border-radius: 999px;
-  border: none;
-  font-size: 1rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
 
 .options-row {
   display: flex;

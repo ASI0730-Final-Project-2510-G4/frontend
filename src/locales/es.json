@@ -27,7 +27,7 @@
 
   "home": {
     "welcome": "Bienvenido a CreatiLink",
-    "to": "A ------",
+    "to": " TechNova",
     "start": "Comenzar"
   },
 
@@ -49,6 +49,14 @@
     "delete": "Eliminar",
     "technologiesUsed": "Tecnologías utilizadas",
     "close":"Cerrar"
+  },
+  "dashboard": {
+    "title": "¿Qué quieres hacer hoy?",
+    "searchDesigners": "Buscar Diseñadores",
+    "viewPortfolio": "Ver mi Portafolio",
+    "viewPayments": "Ver mis Pagos",
+    "viewReviews": "Ver mis Reseñas",
+    "viewChats": "Ver mis Chats"
   }
 }
 
