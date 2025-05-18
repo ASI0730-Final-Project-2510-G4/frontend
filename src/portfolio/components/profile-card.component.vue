@@ -160,33 +160,62 @@ const closeEditModal = () => {
   showEditModal.value = false
 }
 
-const saveProfileChanges = () => {
+const saveProfileChanges = async () => {
   editableProfile.value.experience = experienceText.value.split('\n').map(e => e.trim()).filter(Boolean)
 
-  // Simula guardar en memoria (sin backend)
-  profile.value = JSON.parse(JSON.stringify(editableProfile.value))
-  closeEditModal()
+  try {
+    const response = await fetch('http://localhost:3000/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editableProfile.value)
+    })
+
+    if (!response.ok) throw new Error('Error al guardar en el servidor')
+
+    const updated = await response.json()
+    profile.value = updated
+    closeEditModal()
+  } catch (error) {
+    alert('Error al guardar los cambios: ' + error.message)
+  }
 }
 
 
 onMounted(async () => {
   try {
-    const data = await getProfile()
+    const res = await fetch('http://localhost:3000/profile')
+    const data = await res.json()
     profile.value = data
   } catch (err) {
     console.error('Error cargando perfil:', err)
   }
 })
-const updateProfileField = (field, value) => {
-  profile.value[field] = value
+// ACTUALIZACIÓN INSTANTÁNEA DE IMAGEN O ICONO
+const updateProfileField = async (field, value) => {
+  try {
+    const updatedProfile = {...profile.value, [field]: value}
 
-  if (showEditModal.value) {
-    editableProfile.value = JSON.parse(JSON.stringify(profile.value))
-    experienceText.value = editableProfile.value.experience.join('\n')
+    const response = await fetch('http://localhost:3000/profile', {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(updatedProfile)
+    })
+
+    if (!response.ok) throw new Error('Error al actualizar el perfil')
+
+    const updated = await response.json()
+    profile.value = updated
+
+    if (showEditModal.value) {
+      editableProfile.value = JSON.parse(JSON.stringify(updated))
+      experienceText.value = editableProfile.value.experience.join('\n')
+    }
+  } catch (err) {
+    alert('Error al actualizar: ' + err.message)
+
   }
+
 }
-
-
 
 const onImageChange = (event) => {
   const file = event.target.files[0]

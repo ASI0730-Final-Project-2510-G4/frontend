@@ -1,5 +1,30 @@
 {
-  "profile": {
+  "users": [
+    {
+      "id": 1,
+      "email": "valentino@example.com",
+      "password": "123456",
+      "role": "designer",
+      "profileId": 1
+    },
+    {
+      "id": 2,
+      "email": "ana@example.com",
+      "password": "ana123",
+      "role": "designer",
+      "profileId": 2
+    },
+    {
+      "id": 3,
+      "email": "empresa@empresa.com",
+      "password": "empresa123",
+      "role": "client",
+      "clientId": 1
+    }
+  ],
+  "profile":
+  {
+    "id": 1,
     "name": "Valentino Sandoval Paiva",
     "location": "Lima, Perú",
     "bio": "Soy Valentino Sandoval Paiva, un apasionado diseñador gráfico con más de una década de experiencia en el mundo creativo. Nací y crecí en Lima, Perú, donde descubrí mi amor por el arte y el diseño desde temprana edad. Este interés me llevó a estudiar Diseño Gráfico en la Universidad de Lima, obteniendo el título de Licenciado y consolidando las bases de mi carrera profesional.\nA lo largo de mi trayectoria, he tenido el privilegio de trabajar en diversos proyectos y empresas que me han permitido expandir mis habilidades. Comencé como diseñador junior en una agencia de publicidad local, donde aprendí a dominar el branding y la creación de contenido visual. Con el tiempo, fui ascendiendo hasta ocupar el cargo de Director de Arte en una agencia internacional, liderando equipos creativos y diseñando campañas para marcas globales.\nHe tenido la oportunidad de diseñar identidades visuales para empresas emergentes, crear ilustraciones digitales para revistas internacionales y colaborar con ONG’s en campañas sociales. En cada proyecto, me esfuerzo por aportar innovación y creatividad, buscando siempre superar las expectativas de quienes confían en mí.\nAdemás de mi trabajo profesional, disfruto impartiendo talleres de diseño gráfico para jóvenes talentos. Creo firmemente en compartir el conocimiento y en inspirar a otros a explorar su creatividad. También me apasiona la fotografía urbana y el arte digital, disciplinas que complementan mi trabajo y me permiten mantener una perspectiva fresca e innovadora. Así que si requieres de algún trabajo referente al diseño, no dudes en escribirme:)",
@@ -20,8 +45,7 @@
     "projects": [
       {
         "id": 1,
-        "title": "La Última Resistencia",
-        "url": "#",
+        "title": "La Ultima Resistencia",
         "image": "https://m.media-amazon.com/images/M/MV5BNjM4YWRmYmMtODdhNS00YzM4LWFiZDktYjJkN2U5MGQ4NmUwXkEyXkFqcGc@._V1_.jpg",
         "likes": "13.4k",
         "comments": "1k",
@@ -36,7 +60,6 @@
       {
         "id": 2,
         "title": "Magia en Movimiento",
-        "url": "#",
         "image": "https://m.media-amazon.com/images/S/pv-target-images/a9d4b7304468dc759f95a943ceaadf1f0fca77b481fb5281f6d85e94a13c9f3a.jpg",
         "likes": "23.4k",
         "comments": "500",
@@ -51,7 +74,6 @@
       {
         "id": 3,
         "title": "Amanecer en la Cosecha",
-        "url": "#",
         "image": "https://imagenes.elpais.com/resizer/v2/GXGGOITRWJG55JTGBCWWJW5UKE.png?auth=a3b4a3e2c702d4d4696597d7007aae7deab4881de372c9c1cd704df45171ed7e&width=1200",
         "likes": "43.6k",
         "comments": "13k",
@@ -66,7 +88,6 @@
       {
         "id": 4,
         "title": "Belleza Maldita",
-        "url": "#",
         "image": "https://preview.redd.it/tjto828t13251.png?auto=webp&s=98660b3a30ed7edd37dc394e283efe14e662b604",
         "likes": "62k",
         "comments": "11k",
@@ -81,7 +102,6 @@
       {
         "id": 5,
         "title": "Dragon Ball Z - La Batalla Final",
-        "url": "#",
         "image": "https://i.pinimg.com/736x/78/d0/09/78d00969745cbcff1bd7b06c99cc1630.jpg",
         "likes": "25.2k",
         "comments": "2.5k",
@@ -96,7 +116,6 @@
       {
         "id": 6,
         "title": "Thunderbolts: La Furia de los Héroes",
-        "url": "#",
         "image": "https://i.pinimg.com/736x/3d/ce/a7/3dcea7615a3bb5d2f614b61a0ecb6010.jpg",
         "likes": "18.3k",
         "comments": "1.3k",
@@ -111,7 +130,6 @@
       {
         "id": 7,
         "title": "Kuromi - El Mundo Oscuro",
-        "url": "#",
         "image": "https://i.pinimg.com/736x/d0/82/50/d0825037c7fd5eeabf462fb09991cdf8.jpg",
         "likes": "9.4k",
         "comments": "1.2k",
@@ -126,7 +144,6 @@
       {
         "id": 8,
         "title": "El Nuevo Superman: El Renacer de Krypton",
-        "url": "#",
         "image": "https://cadenapolitica.com/wp-content/uploads/2024/12/teaser-superman-legacy-james-gunn-fecha-estreno-mexico-2025.webp",
         "likes": "30.1k",
         "comments": "3k",
@@ -141,7 +158,6 @@
       {
         "id": 9,
         "title": "Tatuajes de la Vieja Escuela",
-        "url": "#",
         "image": "https://i.pinimg.com/474x/bd/09/29/bd09299805e93880b2b405bec22e3738.jpg",
         "likes": "14.5k",
         "comments": "1k",
@@ -156,7 +172,6 @@
       {
         "id": 10,
         "title": "Chainsaw Man - La Lucha por la Libertad",
-        "url": "#",
         "image": "https://images6.alphacoders.com/125/1259119.jpg",
         "likes": "35.7k",
         "comments": "4.2k",

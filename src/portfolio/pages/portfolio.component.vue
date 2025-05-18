@@ -128,14 +128,12 @@ onMounted(async () => {
 })
 
 const updateProject = async (updatedProject) => {
+  const index = projects.value.findIndex(p => p.id === updatedProject.id)
+  if (index !== -1) projects.value[index] = updatedProject
   try {
-    const index = projects.value.findIndex(p => p.id === updatedProject.id)
-    if (index !== -1) {
-      // Actualizar el proyecto en la lista local
-      projects.value[index] = { ...updatedProject }
-    } else {
-      console.warn('Proyecto no encontrado para actualizar.')
-    }
+    const { data: profile } = await axios.get('http://localhost:3000/profile')
+    profile.projects = profile.projects.map(p => p.id === updatedProject.id ? updatedProject : p)
+    await axios.put('http://localhost:3000/profile', profile)
   } catch (error) {
     console.error('Error al guardar cambios:', error)
   }
@@ -160,10 +158,13 @@ const showConfirmDeleteModal = (project) => {
   showConfirmDeleteModalFlag.value = true
 }
 
-// Confirmar la eliminación del proyecto
-// Confirmar la eliminación del proyecto (versión sin backend)
+
 const confirmDelete = async () => {
   try {
+    // Eliminar el proyecto del servidor
+    const { data: profile } = await axios.get('http://localhost:3000/profile')
+    profile.projects = profile.projects.filter(p => p.id !== projectToDelete.value.id)
+    await axios.put('http://localhost:3000/profile', profile)
     // Eliminar el proyecto de la lista en el frontend
     projects.value = projects.value.filter(p => p.id !== projectToDelete.value.id)
 
@@ -197,7 +198,12 @@ const saveNewProject = async () => {
   }
 
   try {
-    const existingProjects = projects.value || []
+    const { data: profile } = await axios.get('http://localhost:3000/designer')
+    const existingProjects = profile.projects || []
+
+
+
+
     const maxId = existingProjects.reduce((max, p) => (p.id > max ? p.id : max), 0)
     const newId = maxId + 1
 
@@ -205,27 +211,29 @@ const saveNewProject = async () => {
     const randomComments = Math.floor(Math.random() * 15000 + 100)
 
     const techArray = newProject.value.technologies
-        ? newProject.value.technologies
-            .split(',')
-            .map(tech => tech.trim())
-            .filter(tech => tech.length > 0)
-        : []
+        .split(',')
+        .map(tech => tech.trim())
+        .filter(tech => tech.length > 0)
+
+
 
     const projectToAdd = {
       id: newId,
       title: newProject.value.title,
       description: newProject.value.description,
       image: newProject.value.image,
-      url: '#',
-      likes: `${(randomLikes / 1000).toFixed(1)}k`,
-      comments: `${(randomComments / 1000).toFixed(1)}k`,
+      likes: randomLikes,
+      comments: randomComments,
       technologies: techArray
     }
+
+    profile.projects.push(projectToAdd)
+    await axios.put('http://localhost:3000/profile', profile)
 
     // Agregar el proyecto al listado local
     projects.value.push(projectToAdd)
 
-    // Limpiar formulario y cerrar modal
+
     showAddModal.value = false
     newProject.value = { title: '', description: '', image: '', technologies: '' }
 
