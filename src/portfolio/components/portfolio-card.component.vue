@@ -1,5 +1,6 @@
 <template>
   <div class="flip-card">
+
     <div class="flip-card-inner" :class="{ flipped: showBack }">
 
       <div class="flip-card-front" @click="flipCard">
@@ -14,10 +15,18 @@
           <span>❤️ {{ project.likes }}</span>
           <span>💬 {{ project.comments }}</span>
         </div>
+
         <div class="card-actions">
-          <button class="edit-btn" @click.stop="openModal">{{ $t('portfolio.edit') }}</button>
-          <button class="info-btn" @click.stop="openMoreInfo">{{ $t('portfolio.moreInfo') }}</button>
+
+
+          <button class="edit-btn" @click.stop="openModal" v-if="isOwner">
+            {{ $t('portfolio.edit') }}
+          </button>
+          <button class="info-btn" @click.stop="openMoreInfo">
+            {{ $t('portfolio.moreInfo') }}
+          </button>
         </div>
+
       </div>
     </div>
   </div>
@@ -76,13 +85,21 @@
 <script setup>
 import { ref } from 'vue'
 
-const props = defineProps({ project: Object })
+const props = defineProps({  project: {
+    type: Object,
+    required: true
+  },
+  isOwner: {
+    type: Boolean,
+    default: false
+  } })
 const emit = defineEmits(['update-project'])
 
 const showBack = ref(false)
 const showModal = ref(false)
 const showInfoModal = ref(false)
 const editedProject = ref({ ...props.project })
+
 
 const flipCard = () => {
   showBack.value = !showBack.value
@@ -132,9 +149,10 @@ const onImageUpload = (event) => {
 }
 
 .flip-card {
-  width: 100%;
+  width: 320px;
   height: 360px;
   perspective: 1000px;
+  margin: 0 auto;
 }
 
 .card-image {

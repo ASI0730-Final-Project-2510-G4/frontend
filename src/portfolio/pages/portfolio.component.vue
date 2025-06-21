@@ -1,18 +1,23 @@
 <template>
   <div class="portfolio-wrapper">
 
-    <div class="buttons-container-left">
+
+    <div class="buttons-container-left" v-if="isOwner">
+
+
       <button class="add-btn" @click="showAddModal = true"> {{ $t('portfolio.addProject') }}</button>
       <button class="delete-btn" @click="showDeleteModal"> {{ $t('portfolio.deleteProjects') }}</button>
     </div>
 
     <div class="portfolio-grid">
       <PortfolioCard
-          v-for="(project, index) in projects"
-          :key="index"
+          v-for="(project, index) in projectList"
+          :key="project.id"
           :project="project"
+          :isOwner="props.isOwner"
           @update-project="updateProject"
       />
+
     </div>
 
 
@@ -66,7 +71,7 @@
             <img :src="project.image" alt="Project Image" />
             <div class="project-info">
               <p class="project-title">{{ project.title }}</p>
-              <button class="confirm-delete" @click="showConfirmDeleteModal(project)">
+              <button class="confirm-delete" @click="showConfirmDeleteModal(project)" v-if="props.isOwner">
                 {{ $t('portfolio.delete') }}
               </button>
             </div>
@@ -113,14 +118,78 @@ const showDeleteModalFlag = ref(false)
 const showConfirmDeleteModalFlag = ref(false)
 const projectToDelete = ref(null)
 
+import { computed } from 'vue'
+
+const projectList = computed(() => {
+  return props.isOwner ? projects.value : props.projects
+})
+
+
+const props = defineProps({
+  projects: {
+    type: Array,
+    required: true
+  },
+  isOwner: {
+    type: Boolean,
+    required: true
+  }
+});
+
+
+/*
+const fetchProfileIdByUserId = async (userId) => {
+  try {
+    const { data: profile } = await axios.get(`https://creatilink-api-production-4e2f.up.railway.app/api/v1/profiles/by-user`, {
+      params: { userId }
+    });
+
+    return profile?.id || null;
+  } catch (error) {
+    console.error('Error al obtener el perfil por userId:', error);
+    return null;
+  }
+};*/
+
+const fetchProfileIdByUserId = async (userId) => {
+  try {
+
+    const response = await axios.get('http://localhost:3000/profiles');
+    const profiles = response.data;
+
+
+    const profile = profiles.find(p => p.userId === Number(userId));
+
+
+    return profile?.id || null;
+  } catch (error) {
+    console.error('Error al obtener el perfil por userId:', error);
+    return null;
+  }
+};
+
+
+
 onMounted(async () => {
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-  if (!currentUser || !currentUser.profileId) {
-    console.error('No se encontró el profileId');
+  if (!currentUser) {
+    console.error('No hay usuario logueado');
     return;
   }
-  projects.value = await getProjects(currentUser.profileId);
+
+  const profileId = await fetchProfileIdByUserId(currentUser.id);
+  if (!profileId) {
+    console.error('No se encontró un perfil para este usuario');
+    return;
+  }
+
+  // Guardar el profileId en memoria o en localStorage si lo necesitas
+  currentUser.profileId = profileId;
+  localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+  projects.value = await getProjects(profileId);
 });
+
 
 
 const updateProject = async (updatedProject) => {
@@ -128,8 +197,8 @@ const updateProject = async (updatedProject) => {
   if (index !== -1) projects.value[index] = updatedProject
 
   try {
-    await axios.put(`https://my-json-server.typicode.com/SoyValzzz/Creatilink-db2/projects/${Number(updatedProject.id)}`, updatedProject);
-
+    //await axios.put(`https://creatilink-api-production-4e2f.up.railway.app/api/v1/projects/${Number(updatedProject.id)}`, updatedProject);
+    await axios.put(`http://localhost:3000/projects/${updatedProject.id}`, updatedProject);
   } catch (error) {
     console.error('Error al guardar cambios:', error)
   }
@@ -151,7 +220,8 @@ const showConfirmDeleteModal = (project) => {
 }
 const confirmDelete = async () => {
   try {
-    await axios.delete(`https://my-json-server.typicode.com/SoyValzzz/Creatilink-db2/projects/${Number(projectToDelete.value.id)}`);
+    //await axios.delete(`https://creatilink-api-production-4e2f.up.railway.app/api/v1/projects/${Number(projectToDelete.value.id)}`);
+    await axios.delete(`http://localhost:3000/projects/${projectToDelete.value.id}`);
 
     projects.value = projects.value.filter(p => p.id !== projectToDelete.value.id);
 
@@ -172,7 +242,6 @@ const handleImageUpload = (event) => {
   }
   reader.readAsDataURL(file)
 }
-
 const saveNewProject = async () => {
   if (!newProject.value.title || !newProject.value.description || !newProject.value.image) {
     alert('Todos los campos son obligatorios.')
@@ -182,21 +251,6 @@ const saveNewProject = async () => {
   try {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     const profileId = currentUser.profileId;
-    const { data: profile } = await axios.get(`https://my-json-server.typicode.com/SoyValzzz/Creatilink-db/profiles/${profileId}`);
-
-    if (!profile) {
-      console.error('Perfil no encontrado');
-      return;
-    }
-
-    if (!profile.projects) {
-      profile.projects = [];
-    }
-
-    const existingProjects = profile.projects;
-
-    const maxId = existingProjects.reduce((max, p) => (p.id > max ? p.id : max), 0);
-    const newId = maxId + 1;
 
     const randomLikes = Math.floor(Math.random() * 90000 + 1000);
     const randomComments = Math.floor(Math.random() * 15000 + 100);
@@ -207,7 +261,6 @@ const saveNewProject = async () => {
         .filter(tech => tech.length > 0);
 
     const projectToAdd = {
-      id: newId,
       profileId: profileId,
       title: newProject.value.title,
       description: newProject.value.description,
@@ -217,19 +270,22 @@ const saveNewProject = async () => {
       technologies: techArray,
     };
 
-    const { data: addedProject } = await axios.post('https://my-json-server.typicode.com/SoyValzzz/Creatilink-db/projects', projectToAdd);
+    console.log('🔍 Enviando proyecto al backend:', projectToAdd);
+
+    //const { data: addedProject } = await axios.post('https://creatilink-api-production-4e2f.up.railway.app/api/v1/projects', projectToAdd);
+    const { data: addedProject } = await axios.post('http://localhost:3000/projects', projectToAdd);
     projects.value.push(addedProject);
 
     showAddModal.value = false;
     newProject.value = { title: '', description: '', image: '', technologies: '' };
 
   } catch (error) {
-    console.error('Error al añadir proyecto:', error);
+    console.error('❌ Error al añadir proyecto:', error.response?.data || error.message);
   }
 };
 
-</script>
 
+</script>
 
 
 <style scoped>
@@ -842,6 +898,7 @@ const saveNewProject = async () => {
 
 
 </style>
+
 
 
 
