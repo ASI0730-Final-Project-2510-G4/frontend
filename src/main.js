@@ -1,5 +1,5 @@
 import {createApp} from 'vue'
-
+import { createPinia } from 'pinia'
 import App from './app.vue'
 import PrimeVue from 'primevue/config';
 import Aura from '@primevue/themes/aura';
@@ -38,7 +38,8 @@ import SelectButton from "primevue/selectbutton";
 
 
 const app = createApp(App);
-
+const pinia = createPinia()
+app.use(pinia)
 app.use(PrimeVue, {ripple: true, theme: { preset: Aura } });
 
 app.use(ConfirmationService)

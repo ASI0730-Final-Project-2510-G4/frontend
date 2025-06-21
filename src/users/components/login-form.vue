@@ -71,8 +71,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { authService } from '../services/auth.service.js'
-// import { useUserSession } from '../services/user-session.store.js'
+import { useUserStore } from '../../stores/user.js'
 
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
@@ -81,7 +80,7 @@ import Message from 'primevue/message'
 
 const { t } = useI18n()
 const router = useRouter()
-// const { setUser } = useUserSession()
+const userStore = useUserStore()
 
 const credentials = ref({
   email: '',
@@ -105,21 +104,12 @@ async function handleLogin() {
 
   if (validEmail(credentials.value.email) && credentials.value.password) {
     try {
-      const user = await authService.login(credentials.value.email, credentials.value.password)
-
-      if (user) {
-
-        success.value = true
-        submitted.value = false
-
-        setTimeout(() => {
-          if (user.role === 'cliente' || user.role === 'disenador') {
-            router.push('/home')
-          } else {
-            router.push('/home')
-          }
-        }, 1500)
-      }
+      await userStore.login(credentials.value.email, credentials.value.password)
+      success.value = true
+      submitted.value = false
+      setTimeout(() => {
+        router.push('/home')
+      }, 1500)
     } catch (error) {
       errorMessage.value = t('login.errors.invalidCredentials')
     }
