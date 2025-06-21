@@ -1,10 +1,15 @@
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watchEffect } from 'vue'
+
+import { useUserStore } from './stores/user.js'
+
+
 import LanguageSwitcher from "./public/components/language-switcher.component.vue"
 import { authService } from "./users/services/auth.service.js"
 import Menu from 'primevue/menu'
 import { useRouter } from 'vue-router'
 import ClientBalanceBox from './payments/components/client-balance-box.component.vue'
+import { getProfile } from './portfolio/services/profile.service.js'
 
 
 export default {
@@ -16,14 +21,26 @@ export default {
   },
   setup() {
     const router = useRouter()
-
     const drawer = ref(false)
     const menu = ref(null)
-    const currentUser = ref(authService.getCurrentUser())
+
+
+    const userStore = useUserStore()
+
+
+
+
+
+    watchEffect(() => {
+      console.log('🔍 currentUser (store):', userStore.currentUser)
+    })
+
+    const profile = ref(null)
+
 
     const toolbarItems = computed(() => {
-      const role = currentUser.value?.role
-      if (role === 'cliente') {
+      const role = userStore.currentUser?.role
+      if (role === 'client') {
         return [
           { labelKey: 'toolbar.home', to: '/home', icon: 'pi pi-home' },
           { labelKey: 'toolbar.findDesigner', to: '/find-designer', icon: 'pi pi-search' },
@@ -32,12 +49,10 @@ export default {
       } else if (role === 'profile') {
         return [
           { labelKey: 'toolbar.home', to: '/home', icon: 'pi pi-home' },
-          { labelKey: 'toolbar.profile', to: `/profile/${currentUser.value?.profileId}`, icon: 'pi pi-user' },
-          { labelKey: 'toolbar.portfolio', to: '/portfolio', icon: 'pi pi-briefcase' },
+          { labelKey: 'toolbar.profile', to: `/profile/${userStore.currentUser?.id}`, icon: 'pi pi-user' },
           { labelKey: 'toolbar.payments', to: '/payments', icon: 'pi pi-credit-card' },
           { labelKey: 'toolbar.qualifications', to: '/qualifications', icon: 'pi pi-graduation-cap' },
-          { labelKey: 'toolbar.message', to: '/message', icon: 'pi pi-comment' },
-          { labelKey: 'toolbar.findDesigners', to: '/find-designers', icon: 'pi pi-search' }
+          { labelKey: 'toolbar.message', to: '/message', icon: 'pi pi-comment' }
         ]
       }
       return []
@@ -45,15 +60,15 @@ export default {
 
     const menuItems = computed(() => [
       {
-        label: currentUser.value?.profileId || 'Usuario',
+        label: profile.value?.name || 'Usuario',
         icon: 'pi pi-user'
       },
       {
         label: 'Cerrar sesión',
         icon: 'pi pi-sign-out',
         command: () => {
-          authService.logout()
-          currentUser.value = null
+
+          userStore.logout()
           router.push('/login')
         }
       }
@@ -65,19 +80,28 @@ export default {
       }
     }
 
-    onMounted(() => {
-      if (!currentUser.value) {
+    onMounted(async () => {
+
+      if (!userStore.currentUser) {
         router.push('/login')
+      } else if (userStore.currentUser.role === 'profile') {
+        try {
+          profile.value = await getProfile(userStore.currentUser.profileId)
+        } catch (err) {
+          console.error("Error al cargar el perfil:", err)
+        }
       }
     })
 
     return {
       drawer,
-      currentUser,
+
+      currentUser: userStore.currentUser,
       toolbarItems,
       menuItems,
       menu,
-      onUserButtonClick
+      onUserButtonClick,
+      profile
     }
   }
 }
@@ -128,7 +152,7 @@ export default {
             </pv-button>
           </router-link>
         </div>
-        <template v-if="currentUser?.role === 'cliente'">
+        <template v-if="currentUser?.role === 'client'">
           <client-balance-box />
         </template>
         <language-switcher class="language-switcher" />
