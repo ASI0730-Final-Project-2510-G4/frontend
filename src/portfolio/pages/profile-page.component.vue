@@ -32,7 +32,7 @@ const closeCreateModal = () => {
 
 const createProfile = async (newProfile) => {
   try {
-    // 1. Obtener todos los perfiles para determinar el último ID
+
     const resProfiles = await fetch('http://localhost:3000/profiles');
     if (!resProfiles.ok) throw new Error('Error obteniendo perfiles');
 
@@ -40,13 +40,13 @@ const createProfile = async (newProfile) => {
     const lastId = profiles.length > 0 ? Math.max(...profiles.map(p => Number(p.id))) : 0;
     const nextId = lastId + 1;
 
-    // 2. Crear nuevo perfil con ID asignado manualmente
+
     const profileToCreate = {
       id: nextId,
       ...newProfile
     };
 
-    // 3. Enviar solicitud POST
+
     const response = await fetch('http://localhost:3000/profiles', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

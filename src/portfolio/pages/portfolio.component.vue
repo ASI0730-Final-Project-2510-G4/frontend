@@ -183,7 +183,7 @@ onMounted(async () => {
     return;
   }
 
-  // Guardar el profileId en memoria o en localStorage si lo necesitas
+
   currentUser.profileId = profileId;
   localStorage.setItem('currentUser', JSON.stringify(currentUser));
 
