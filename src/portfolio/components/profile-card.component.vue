@@ -1,10 +1,10 @@
 <template>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <div class="profile-card">
-    <div class="header">
+  <div class="profile-card" v-if="!showCreateModal">
+    <div class="header" >
       <div class="header-left">
-        <div class="icon-container">
+      <div class="icon-container">
           <img :src="profile.icon || '/images/default-icon.jpg'" alt="Profile Icon" class="profile-icon" />
           <label class="camera-icon-icon" v-if="isOwnProfile">
             <i class="fas fa-camera"></i>
@@ -26,7 +26,7 @@
       </div>
     </div>
 
-    <div class="body">
+    <div class="body" >
       <div class="left-section">
         <div class="nav-buttons">
           <button class="btn-tab" @click="activeTab = 'about'">{{ $t('profile.aboutMe') }}</button>
@@ -42,7 +42,8 @@
 
         <PortfolioSection
             v-if="activeTab === 'portfolio'"
-            :projects="profile.projects"
+            :projects="projects"
+            :isOwner="profile.userId === currentUser.id"
         />
       </div>
 
@@ -104,9 +105,16 @@
       </div>
     </div>
   </div>
+  <CreateProfileModal
+      v-if="showCreateModal"
+      :userId="currentUser?.id"
+      @create="handleCreateProfile"
+      @close="showCreateModal = false"
+  />
 </template>
 
 <script setup>
+import CreateProfileModal from '../components/Create-profile.component.vue'
 import PortfolioSection from '../pages/portfolio.component.vue'
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
@@ -127,16 +135,21 @@ const profile = ref({
     instagram: '',
     facebook: '',
     x: ''
-  },
-  projects: []
+  }
 })
 
+
+const projects = ref([]);
+
 const currentUser = ref(JSON.parse(localStorage.getItem('currentUser')) || {})
-const isOwnProfile = computed(() => currentUser.value?.profileId == profile.value?.id)
+const isOwnProfile = computed(() => currentUser.value?.id == route.params.profileId);
+
 
 const showEditModal = ref(false)
 const editableProfile = ref({})
 const experienceText = ref('')
+const showCreateModal = ref(false)
+
 
 const openEditModal = () => {
   editableProfile.value = JSON.parse(JSON.stringify(profile.value))
@@ -149,58 +162,112 @@ const closeEditModal = () => {
 }
 
 const saveProfileChanges = async () => {
-  editableProfile.value.experience = experienceText.value.split('\n').map(e => e.trim()).filter(Boolean)
+  editableProfile.value.experience = experienceText.value.split('\n').map(e => e.trim()).filter(Boolean);
 
   try {
-    const response = await fetch(`https://my-json-server.typicode.com/SoyValzzz/Creatilink-db/profiles/${editableProfile.value.id}`, {
+    const response = await fetch(`http://localhost:3000/profiles/${editableProfile.value.id}`, {
+    //const response = await fetch(`https://creatilink-api-production-4e2f.up.railway.app/api/v1/profiles/${editableProfile.value.id}`, {
+
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(editableProfile.value)
-    })
+    });
 
-    if (!response.ok) throw new Error('Error al guardar en el servidor')
+    if (!response.ok) throw new Error('Error al guardar en el servidor');
 
-    const updated = await response.json()
-    profile.value = updated
-    closeEditModal()
+    const updated = await response.json();
+    profile.value = updated;
+    closeEditModal();
   } catch (error) {
-    alert('Error al guardar los cambios: ' + error.message)
+    alert('Error al guardar los cambios: ' + error.message);
   }
-}
+};
 
 onMounted(async () => {
   try {
-    const profileId = route.params.profileId
-    const loadedProfile = await getProfile(profileId)
-    profile.value = loadedProfile
+    const userId = route.params.profileId;
+    if (!userId) {
+      showCreateModal.value = true;
+      return;
+    }
+
+    const loadedProfile = await getProfile(userId);
+
+    if (!loadedProfile || Object.keys(loadedProfile).length === 0) {
+      // Solo muestra modal si estás viendo tu propio perfil
+      showCreateModal.value = isOwnProfile.value;
+      return;
+    }
+
+    profile.value = loadedProfile;
+
+
+    //const res = await fetch(`https://creatilink-api-production-4e2f.up.railway.app/api/v1/projects/by-profile/${loadedProfile.id}`);
+    const res = await fetch(`http://localhost:3000/projects?profileId=${loadedProfile.id}`);
+
+
+
+    projects.value = await res.json();
+
+
   } catch (err) {
-    console.error('Error cargando perfil:', err)
+    console.error('Error cargando perfil:', err);
+    showCreateModal.value = isOwnProfile.value;
   }
-})
+});
 
-const updateProfileField = async (field, value) => {
+const handleCreateProfile = async (newProfile) => {
   try {
-    const updatedProfile = { ...profile.value, [field]: value }
 
-    const response = await fetch(`https://my-json-server.typicode.com/SoyValzzz/Creatilink-db/profiles/${updatedProfile.id}`, {
+    newProfile.id = currentUser.value.id;
+    newProfile.userId = currentUser.value.id;
+    console.log(' Datos que se van a enviar al backend:', JSON.stringify(newProfile, null, 2));
+
+
+    //const response = await fetch('https://creatilink-api-production-4e2f.up.railway.app/api/v1/profiles', {
+      const response = await fetch('http://localhost:3000/profiles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newProfile)
+    });
+
+    if (!response.ok) throw new Error('Error al crear el perfil');
+
+    const created = await response.json();
+    profile.value = created;
+    showCreateModal.value = false;
+  } catch (err) {
+    alert('No se pudo crear el perfil: ' + err.message);
+  }
+};
+
+
+
+
+
+const updateProfile = async (updatedProfile) => {
+  try {
+    const response = await fetch(`http://localhost:3000/profiles/${updatedProfile.id}`, {
+    //const response = await fetch(`https://creatilink-api-production-4e2f.up.railway.app/api/v1/profiles/${updatedProfile.id}`, {
+
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedProfile)
-    })
+      body: JSON.stringify(updatedProfile),
+    });
 
-    if (!response.ok) throw new Error('Error al actualizar el perfil')
+    if (!response.ok) throw new Error('Error al actualizar el perfil');
 
-    const updated = await response.json()
-    profile.value = updated
+    const updated = await response.json();
+    profile.value = updated;
 
     if (showEditModal.value) {
-      editableProfile.value = JSON.parse(JSON.stringify(updated))
-      experienceText.value = editableProfile.value.experience.join('\n')
+      editableProfile.value = JSON.parse(JSON.stringify(updated));
+      experienceText.value = editableProfile.value.experience.join('\n');
     }
   } catch (err) {
-    alert('Error al actualizar: ' + err.message)
+    alert('Error al actualizar el perfil: ' + err.message);
   }
-}
+};
 
 const onImageChange = (event) => {
   const file = event.target.files[0]
@@ -208,7 +275,8 @@ const onImageChange = (event) => {
 
   const reader = new FileReader()
   reader.onload = () => {
-    updateProfileField('image', reader.result)
+    const updated = { ...profile.value, image: reader.result }
+    updateProfile(updated)
   }
   reader.readAsDataURL(file)
 }
@@ -219,10 +287,12 @@ const onIconChange = (event) => {
 
   const reader = new FileReader()
   reader.onload = () => {
-    updateProfileField('icon', reader.result)
+    const updated = { ...profile.value, icon: reader.result }
+    updateProfile(updated)
   }
   reader.readAsDataURL(file)
 }
+
 </script>
 
 

@@ -2,6 +2,7 @@
 export class Profile {
     constructor({
                     id,
+                    userId,
                     name,
                     location,
                     bio,
@@ -11,6 +12,7 @@ export class Profile {
                     social
                 }) {
         this.id = id;
+        this.userId = userId;
         this.name = name;
         this.location = location;
         this.bio = bio;

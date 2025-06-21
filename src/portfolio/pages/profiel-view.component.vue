@@ -4,11 +4,11 @@
     <div class="card-grid">
       <div v-for="user in otherUsers" :key="user.id" class="card">
 
-        <div class="card-background" :style="getCardBackground(user.profileId)"></div>
+        <div class="card-background" :style="getCardBackground(user.id)"></div>
 
         <div class="card-overlay">
-          <p class="card-name">{{ getProfileName(user.profileId) }}</p>
-          <button class="btn view-profile" @click="goToProfile(user.profileId)">
+          <p class="card-name">{{ getProfileName(user.id) }}</p>
+          <button class="btn view-profile" @click="goToProfile(user.id)">
             {{ $t('userList.viewProfile') }}
           </button>
         </div>
@@ -22,7 +22,9 @@
 import { authService } from "../../users/services/auth.service.js";
 import axios from 'axios';
 
-const API_URL_PROFILES = 'https://my-json-server.typicode.com/SoyValzzz/Creatilink-db/profiles';
+//const API_URL_PROFILES = 'https://creatilink-api-production-4e2f.up.railway.app/api/v1/profiles';
+const API_URL_PROFILES = 'http://localhost:3000/profiles';
+
 
 export default {
   data() {
@@ -47,26 +49,36 @@ export default {
       }
     },
 
-    getProfileImage(profileId) {
-      const profile = this.profiles.find(p => p.id === String(profileId));
+    getProfileByUserId(userId) {
+      return this.profiles.find(p => p.userId === String(userId));
+    },
+
+    getProfileImage(userId) {
+      const profile = this.getProfileByUserId(userId);
       return profile ? profile.image : '';
     },
 
-    getProfileName(profileId) {
-      const profile = this.profiles.find(p => p.id === String(profileId));
+    getProfileName(userId) {
+      const profile = this.getProfileByUserId(userId);
       return profile ? profile.name : '';
     },
 
-    getCardBackground(profileId) {
-      const image = this.getProfileImage(profileId);
+    getCardBackground(userId) {
+      const image = this.getProfileImage(userId);
       return {
         backgroundImage: `url('${image}')`
       };
     },
 
-    goToProfile(profileId) {
-      this.$router.push({ name: 'profile', params: { profileId } });
+    goToProfile(userId) {
+      const profile = this.getProfileByUserId(userId);
+      if (profile) {
+        this.$router.push({ name: 'profile', params: { profileId: profile.id } });
+      } else {
+        console.warn(`No se encontró perfil para el usuario con ID ${userId}`);
+      }
     }
+
   },
 
   computed: {
@@ -82,6 +94,7 @@ export default {
   }
 };
 </script>
+
 
 <style scoped>
 .card-grid {
